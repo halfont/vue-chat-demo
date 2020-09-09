@@ -67,39 +67,27 @@
 import { mapGetters } from "vuex";
 const axios = require("axios");
 import store from "../store";
+import polling from "../mixin/polling"
 
 export default {
   name: "GroupSelect",
+  mixins: [polling],
   data() {
     return {
       dialog: false,
       roomName: "",
-      timeoutIds: []
     };
   },
   beforeDestroy() {
-    this.killTimeouts() 
+    polling.killTimeouts() 
   },
   mounted() {
-    this.killTimeouts() 
-    this.poll(this.fetchGroupList);
+    
+    polling.killTimeouts() 
+    polling.poll(this.fetchGroupList);
   },
   methods: {
-    poll: async function (cb) {
-      let id = setTimeout(() => {
-        cb()
-          .then(this.poll(cb))
-          .catch(() => {
-            console.error("somthing went wrong with polling");
-          });
-      }, 1000);
-      this.timeoutIds.push(id);
-    },
-    killTimeouts() {
-      this.timeoutIds.forEach((id) => {
-        clearTimeout(id)
-      })
-    },
+
     fetchGroupList: function () {
       return axios
         .get("/rooms")
