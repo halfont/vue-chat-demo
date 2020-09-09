@@ -78,13 +78,9 @@ export default {
       roomName: "",
     };
   },
-  beforeDestroy() {
-    polling.killTimeouts() 
-  },
   mounted() {
-    
-    polling.killTimeouts() 
-    polling.poll(this.fetchGroupList);
+    this.killTimeouts() 
+    this.poll(this.fetchGroupList);
   },
   methods: {
 

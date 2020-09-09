@@ -3,15 +3,17 @@
     <v-navigation-drawer :permanent="true" absolute dark fixed :width="150">
       <v-list dense nav>
         <v-list-item two-line>
-          <v-list-item-content>
-            <v-list-item-title></v-list-item-title>
+          
+          <v-list-item-content >
+            
+            <v-list-item-title class="d-flex justify-center titleText" ><h1>{{roomList[roomNum].name}}</h1></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item-subtitle>users</v-list-item-subtitle>
         <v-divider></v-divider>
+        
         <v-list-item v-for="item in usersInRoom" :key="item.id" link>
           <v-list-item-content v-if="allUsersList[item]">
-            <v-list-item-title>{{ allUsersList[item].name }}</v-list-item-title>
+            <v-list-item-title class="d-flex justify-center">{{ allUsersList[item].name }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -60,15 +62,16 @@
 import { mapGetters } from "vuex";
 const axios = require("axios");
 import store from "../store";
+import polling from "../mixin/polling"
 
 export default {
   name: "ChatRoom",
+  mixins: [polling],
   data() {
     return {
       message: "",
       roomNum: this.$router.currentRoute.params.roomId,
       usersInRoom: [],
-      timeoutIds: [],
     };
   },
   beforeDestroy() {
@@ -81,21 +84,7 @@ export default {
     this.poll(this.getAllUsers);
   },
   methods: {
-    poll: function (cb) {
-      let id = setTimeout(() => {
-        cb()
-          .then(this.poll(cb))
-          .catch(() => {
-            console.error("somthing went wrong. please try again later");
-          });
-      }, 500);
-      this.timeoutIds.push(id);
-    },
-    killTimeouts() {
-      this.timeoutIds.forEach((id) => {
-        clearTimeout(id);
-      });
-    },
+
     scrollToEnd: function () {
       var container = this.$el.querySelector("#listOfText");
       container.scrollTop = container.scrollHeight;
@@ -158,6 +147,7 @@ export default {
     ...mapGetters({
       chatData: "rooms/chatData",
       usersList: "rooms/usersList",
+      roomList: "rooms/roomList",
       allUsersList: "rooms/allUsersList",
       loggedinUser: "rooms/loggedinUser",
     }),
@@ -170,4 +160,11 @@ export default {
   margin-left: 150px;
   height: 90vh;
 }
+.titleText{
+   font-family: "Times New Roman", Times, serif;
+   font-weight: bold;
+}
+
+
+
 </style>

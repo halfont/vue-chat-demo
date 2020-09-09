@@ -1,11 +1,11 @@
-export const polling = {
+const polling = {
     data() {
         return {
             timeoutIds: []
         }
     },
     methods: {
-        poll: (cb) => {
+        poll(cb){
             let id = setTimeout(() => {
                 cb()
                     .then(this.poll(cb))
@@ -15,10 +15,11 @@ export const polling = {
             }, 1000);
             this.timeoutIds.push(id);
         },
-        killTimeouts: () => {
+        killTimeouts(){
             this.timeoutIds.forEach((id) => {
                 clearTimeout(id)
             })
         },
     }
 }
+export default polling
