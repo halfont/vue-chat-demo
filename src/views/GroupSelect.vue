@@ -74,14 +74,34 @@ export default {
     return {
       dialog: false,
       roomName: "",
+      timeoutIds: []
     };
   },
+  beforeDestroy() {
+    this.killTimeouts() 
+  },
   mounted() {
-    this.fetchGroupList();
+    this.killTimeouts() 
+    this.poll(this.fetchGroupList);
   },
   methods: {
+    poll: async function (cb) {
+      let id = setTimeout(() => {
+        cb()
+          .then(this.poll(cb))
+          .catch(() => {
+            console.error("somthing went wrong with polling");
+          });
+      }, 1000);
+      this.timeoutIds.push(id);
+    },
+    killTimeouts() {
+      this.timeoutIds.forEach((id) => {
+        clearTimeout(id)
+      })
+    },
     fetchGroupList: function () {
-      axios
+      return axios
         .get("/rooms")
         .then(function (response) {
           store.dispatch("rooms/setRooms", response.data);
@@ -94,6 +114,7 @@ export default {
       axios
         .post(`/rooms/${RoomId}/users`, { userId: this.loggedinUser.id })
         .then(() => {
+          this.killTimeouts();
           this.$router.push({ path: `chat/${RoomId}` });
         })
         .catch(function (error) {

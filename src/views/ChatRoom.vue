@@ -68,22 +68,41 @@ export default {
       message: "",
       roomNum: this.$router.currentRoute.params.roomId,
       usersInRoom: [],
+      timeoutIds: [],
     };
   },
-  props: {},
+  beforeDestroy() {
+    this.killTimeouts();
+  },
   mounted() {
-    this.getChatText();
-    this.getUserList();
-    this.getAllUsers();
+    this.killTimeouts();
+    this.poll(this.getChatText);
+    this.poll(this.getUserList);
+    this.poll(this.getAllUsers);
   },
   methods: {
+    poll: function (cb) {
+      let id = setTimeout(() => {
+        cb()
+          .then(this.poll(cb))
+          .catch(() => {
+            console.error("somthing went wrong. please try again later");
+          });
+      }, 500);
+      this.timeoutIds.push(id);
+    },
+    killTimeouts() {
+      this.timeoutIds.forEach((id) => {
+        clearTimeout(id);
+      });
+    },
     scrollToEnd: function () {
       var container = this.$el.querySelector("#listOfText");
       container.scrollTop = container.scrollHeight;
     },
     onSubmit() {
       if (this.message !== "") {
-        axios
+        return axios
           .post(`/rooms/${this.roomNum}/text`, {
             text: this.message,
             userId: this.loggedinUser.id,
@@ -97,7 +116,7 @@ export default {
       }
     },
     getChatText() {
-      axios
+      return axios
         .get(`/rooms/${this.roomNum}/text`)
         .then((response) => {
           let rId = this.$router.currentRoute.params.roomId;
@@ -113,7 +132,7 @@ export default {
         });
     },
     getUserList() {
-      axios
+      return axios
         .get(`/rooms/${this.roomNum}/users`)
         .then((response) => {
           this.usersInRoom = new Set(response.data.users);
@@ -125,7 +144,7 @@ export default {
     },
 
     getAllUsers() {
-      axios
+      return axios
         .get(`/users`)
         .then((response) => {
           store.dispatch("rooms/setAllUsers", response.data);
